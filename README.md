@@ -1,0 +1,2 @@
+# lookout
+lookout = foiamail + outlook
