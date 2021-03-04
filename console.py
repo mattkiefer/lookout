@@ -6,7 +6,7 @@ from msgraphcore import GraphSession
 
 # config #
 
-param_path = 'parameters.json'
+param_path = 'secrets.json'
 config = json.load(open(param_path))
 base_url = '/users/' + config['sample_user'] + '/'
 status_report_path = 'status_report.csv'
@@ -153,7 +153,7 @@ def get_messages_by_category(cat_name):
     return messages
     
 
-def write_report():
+def basic_report():
     """
     assumes no response = 'status/sent'
     """
@@ -164,14 +164,17 @@ def write_report():
 
     file_names = get_categories()['file']
     for file_name in file_names:
-        status = get_status(file_name)
+        # all status labels applied to messages for this foia
+        statuses = get_statuses(file_name)
+        # derive the the most relevant status
+        status = get_status(statuses)
         row = {'file':file_name,'status':status}
         print(row)
         outcsv.writerow(row)
     outfile.close()
 
 
-def get_status(file_slug):
+def get_statuses(file_slug):
     """
     get messages + their threads
     collect their status tags,
@@ -187,12 +190,15 @@ def get_status(file_slug):
             # catch flags
             if convo_msg['flag']['flagStatus'] == 'flagged':
                 statuses.add('flagged')
-            # look for replies
             if '@washpost.com' not in convo_msg['sender']['emailAddress']:
                 statuses.add('replied')
             # catch attachments
             if convo_msg['hasAttachments']:
                 statuses.add('attachment')
+    return statuses
+
+
+def get_status(statuses):
     if 'flagged' in statuses:
         return 'flagged'
     if 'status/appeal' in statuses:
@@ -207,15 +213,21 @@ def get_status(file_slug):
         return 'denied'
     if 'status/partial' in statuses:
         return 'partially complete'
-    if 'status/attachment' in statuses:
+    if 'attachment' in statuses:
         return 'attachment'
     if 'status/replied' in statuses:
         return 'replied'
     # inelegant bail out
     if 'status/portal' in statuses:
         return 'portal'
-    return 'sent'
+    if 'status/sent' in statuses:
+        return 'sent'
+    else:
+        return None
 
+
+def get_correspondence():
+    pass
 
 # atts
 def sweep():
