@@ -1,7 +1,9 @@
 # my stuff
 secret*
 notes*
-wp*
+wp
+*csv
+*xls**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
