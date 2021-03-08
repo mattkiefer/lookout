@@ -176,26 +176,56 @@ def basic_report():
 
 def get_statuses(file_slug):
     """
-    get messages + their threads
-    collect their status tags,
-    make other inferences
+    loop through messages tied to a foia,
+    return a list of status labels 
+    + associated messages
     """
     messages = get_messages_by_category(file_slug)
-    statuses = set()
+    statuses = {}
     for message in messages:
         conversation = get_conversation(message['conversationId'])
         for convo_msg in conversation:
             for cat_name in convo_msg['categories']:
-                statuses.add(cat_name)
+                if cat_name not in statuses:
+                    statuses[cat_name] = {}
+                statuses[cat_name][convo_msg['id']] = convo_msg
             # catch flags
             if convo_msg['flag']['flagStatus'] == 'flagged':
-                statuses.add('flagged')
+                if 'flagged' not in statuses:
+                    statuses['flagged'] = {}
+                statuses['flagged'][convo_msg['id']] = convo_msg
             if '@washpost.com' not in convo_msg['sender']['emailAddress']:
-                statuses.add('replied')
+                if 'replied' not in statuses:
+                    statuses['replied'] = {}
+                statuses['replied'][convo_msg['id']] = convo_msg
             # catch attachments
             if convo_msg['hasAttachments']:
-                statuses.add('attachment')
+                if 'attachment' not in statuses:
+                    statuses['attachment'] = {}
+                statuses['attachment'][convo_msg['id']] = convo_msg
     return statuses
+
+
+def make_msg_link(msg):
+    #return '=HYPERLINK("' +  msg["webLink"] + '","' + msg["subject"] + ' | ' + msg["sentDateTime"] + '")' 
+    return '=HYPERLINK("' +  msg["webLink"] + '",TRUE)' 
+
+
+
+def get_request_status_links(status,statuses):
+    """
+    return link to most recent msg
+    for a given status
+    """
+    if status in statuses:
+        #links = sorted([make_msg_link(statuses[status][msg]) for msg in statuses[status]], key = lambda x: x['sentDateTime'], reverse=True)
+        sorted_msgs = sorted([statuses[status][msg] for msg in statuses[status]], key = lambda x: x['sentDateTime'])
+        if sorted_msgs:
+            return make_msg_link(sorted_msgs[0])
+    else:
+        return ""
+    
+    
 
 
 def get_status(statuses):
@@ -217,7 +247,6 @@ def get_status(statuses):
         return 'attachment'
     if 'status/replied' in statuses:
         return 'replied'
-    # inelegant bail out
     if 'status/portal' in statuses:
         return 'portal'
     if 'status/sent' in statuses:
