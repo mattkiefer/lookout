@@ -1,3 +1,11 @@
+from auth.auth import base_url, session
+from pathlib import Path
+import requests.exceptions
+
+### START CONFIG ###
+disallowed_exts = ['jpg','jpeg','png']
+### END CONFIG ###
+
 def sweep():
     """
     move attachments
@@ -5,7 +13,6 @@ def sweep():
     to onedrive
     """
     # keep track of what folders exist
-    # brittle!
     folders = []
     foia_folder_url = base_url + 'drive/root:/' + onedrive_foia_responses_path
     foia_folder = json.loads(session.get(foia_folder_url).content)

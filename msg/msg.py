@@ -2,7 +2,9 @@ import json
 from auth.auth import base_url, session
 
 ### START CONFIG ###
-sample_msg_id = '' # for testing
+param_path = 'config/project_configs.json'
+project_configs = json.load(open(param_path))
+sample_msg_id = project_configs['sample_msg_id'] # for testing
 ### END CONFIG ###
 
 def get_message(message_id=sample_msg_id):
