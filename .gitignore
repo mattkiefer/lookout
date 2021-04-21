@@ -1,11 +1,12 @@
 # my stuff
-*secret*
+*secrets*
 *notes*
 *wp*
 *csv
 *xls*
 scratch.py
 bin
+project_configs.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,9 +5,9 @@ from azure.identity import ClientSecretCredential
 from msgraphcore import GraphSession
 
 ### START CONFIG ###
-param_path = 'auth/secrets.json'
+param_path = 'config/secrets.json'
 config = json.load(open(param_path))
-base_url = '/users/' + config['sample_user'] + '/'
+base_url = '/users/' + config['user'] + '/'
 ### END CONFIG ###
 
 
