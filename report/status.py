@@ -3,16 +3,14 @@ from auth.auth import base_url, session
 from msg.msg import get_conversation 
 
 ### START CONFIG ###
-# TODO: config this
-status_report_path = 'report/status_report.csv'
-one_drive_project_folder_name = 'the_unarmed'
-workbook_id = '01PM7Q3SAESHBAYBW4SVEIMOEAOGK4WXGF'
-worksheet_id = '{00000000-0001-0000-0100-000000000000}'
-table_id = '{F58E32C8-BBB9-4615-A3E9-3BD41DDA1E6B}'
+configs = json.loads(open('config/project_configs.json').read())
+status_report_path = configs['status_report_path']
+one_drive_project_folder_name = configs['one_drive_project_folder_name']
+workbook_id = configs['workbook_id']
+worksheet_id = configs['worksheet_id']
+table_id = configs['table_id']
+sender_domain = configs['sender_domain']
 ### END CONFIG ###
-
-# NOTES
-# get_table_url = base_url + 'drive/root:/sample.xlsx:/workbook/worksheets/Sheet2/tables/Table13/rows'
 
 
 def get_messages_by_category(cat_name):
@@ -55,11 +53,13 @@ def get_statuses(file_slug):
                 if 'flagged' not in statuses:
                     statuses['flagged'] = {}
                 statuses['flagged'][convo_msg['id']] = convo_msg
-            if '@washpost.com' not in convo_msg['sender']['emailAddress']:
+            if sender_domain not in convo_msg['sender']['emailAddress']:
                 if 'replied' not in statuses:
                     statuses['replied'] = {}
                 statuses['replied'][convo_msg['id']] = convo_msg
+                #TODO fix bug where senders show up in replies
             # catch attachments
+            # TODO: filter out bad att extensions
             if convo_msg['hasAttachments']:
                 if 'attachment' not in statuses:
                     statuses['attachment'] = {}
@@ -68,7 +68,6 @@ def get_statuses(file_slug):
 
 
 def make_msg_link(msg):
-    #return '=HYPERLINK("' +  msg["webLink"] + '","' + msg["subject"] + ' | ' + msg["sentDateTime"] + '")' 
     return '=HYPERLINK("' +  msg["webLink"] + '","msg_link")' 
 
 
@@ -78,8 +77,7 @@ def get_request_status_links(status,statuses):
     for a given status
     """
     if status in statuses:
-        #links = sorted([make_msg_link(statuses[status][msg]) for msg in statuses[status]], key = lambda x: x['sentDateTime'], reverse=True)
-        sorted_msgs = sorted([statuses[status][msg] for msg in statuses[status]], key = lambda x: x['sentDateTime'])
+        sorted_msgs = sorted([statuses[status][msg] for msg in statuses[status]], key = lambda x: x['sentDateTime'], reverse=True)
         if sorted_msgs:
             return make_msg_link(sorted_msgs[0])
     else:
@@ -211,7 +209,6 @@ def patch_report():
     updated_data = update_report(data)
     # gets confusing moving from indexed=>k:v=>index rows ... 
     updated_values = []
-    # sigh ...
     updated_values.append(headers)
     for row in updated_data:
         updated_row = []
@@ -221,15 +218,13 @@ def patch_report():
     patch_payload = {'values': updated_values, 'formulas': sheet_data['formulas'], 'numberFormat': sheet_data['numberFormat']}
     patch_payload = {'values': updated_values, 'formulas': updated_values, 'numberFormat': sheet_data['numberFormat']}
 
-    
-
     # clear the sheet
     clear_sheet()
-# TODO
 
     patch_sheet_url = base_url + "drive/items/{wbid}/workbook/worksheets/{wsid}/range(address='{address}')".format(wbid=workbook_id,wsid=worksheet_id,address=sheet_data['address'])
 
     patch_sheet_range = session.patch(patch_sheet_url,headers={'Content-Type':'application/json'},data=json.dumps(patch_payload))
+
 
 def clear_sheet():
     session.post(base_url + 'drive/items/{wbid}/workbook/worksheets/{wsid}/range/clear'.format(wbid=workbook_id,wsid=worksheet_id),headers={'Content-Type':'application/json'})
