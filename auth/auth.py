@@ -4,25 +4,25 @@ import requests.exceptions
 from azure.identity import ClientSecretCredential
 from msgraphcore import GraphSession
 
+from config.config import secrets
+
 ### START CONFIG ###
-param_path = 'config/secrets.json'
-config = json.load(open(param_path))
-base_url = '/users/' + config['user'] + '/'
+base_url = '/users/' + secrets['user'] + '/'
 ### END CONFIG ###
 
 
 def get_cred():
     # authenticate
     credential = ClientSecretCredential(
-        tenant_id = config["tenant_id"],
-        client_id = config["client_id"],
-        client_secret = config["client_secret"])
+        tenant_id = secrets["tenant_id"],
+        client_id = secrets["client_id"],
+        client_secret = secrets["client_secret"])
     return credential
 
 
 def get_session():
     # start a session
-    graph_session = GraphSession(get_cred(), config["scope"])
+    graph_session = GraphSession(get_cred(), secrets["scope"])
     return graph_session
 
 session = get_session()

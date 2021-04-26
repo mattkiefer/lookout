@@ -1,9 +1,8 @@
 import json
 from auth.auth import base_url, session
+from config.config import project_configs
 
 ### START CONFIG ###
-param_path = 'config/project_configs.json'
-project_configs = json.load(open(param_path))
 sample_msg_id = project_configs['sample_msg_id'] # for testing
 ### END CONFIG ###
 
@@ -74,6 +73,26 @@ def get_categories():
             break
     return categories
 
+
+def get_messages_by_category(cat_name):
+    """
+    one at a time
+    """
+    # TODO scan entire thread
+    url = base_url + "messages?$filter=categories/any(a:a eq '{category}')".format(category=cat_name)
+    response = session.get(url)
+    content = json.loads(response.content)
+    messages = []
+    while 'value' in content.keys():
+        for message in content['value']:
+            messages.append(message)
+        if '@odata.nextLink' in content.keys():
+            response = session.get(content['@odata.nextLink'])
+            content = json.loads(response.content)
+        else:
+            break
+    return messages
+    
 
 def get_conversation(conversation_id):
     """

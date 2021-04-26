@@ -1,6 +1,6 @@
 import csv, json
 from auth.auth import base_url, session
-from msg.msg import get_conversation 
+from msg.msg import get_conversation, get_messages_by_category 
 
 ### START CONFIG ###
 configs = json.loads(open('config/project_configs.json').read())
@@ -13,25 +13,6 @@ sender_domain = configs['sender_domain']
 ### END CONFIG ###
 
 
-def get_messages_by_category(cat_name):
-    """
-    one at a time
-    """
-    # TODO scan entire thread
-    url = base_url + "messages?$filter=categories/any(a:a eq '{category}')".format(category=cat_name)
-    response = session.get(url)
-    content = json.loads(response.content)
-    messages = []
-    while 'value' in content.keys():
-        for message in content['value']:
-            messages.append(message)
-        if '@odata.nextLink' in content.keys():
-            response = session.get(content['@odata.nextLink'])
-            content = json.loads(response.content)
-        else:
-            break
-    return messages
-    
 
 def get_statuses(file_slug):
     """
