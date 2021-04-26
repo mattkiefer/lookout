@@ -1,9 +1,16 @@
-from auth.auth import base_url, session
+import json, base64, os
 from pathlib import Path
 import requests.exceptions
+from auth.auth import base_url, session
+from config.config import project_configs
+from msg.msg import get_messages_by_category, get_msg_fileslug
 
 ### START CONFIG ###
 disallowed_exts = ['jpg','jpeg','png']
+local_download_dir = project_configs['local_download_dir']
+base_project_folder_name = project_configs['base_project_folder_name']
+foia_response_folder_name = project_configs['foia_response_folder_name']
+foia_response_folder_path = base_project_folder_name + '/' + foia_response_folder_name
 ### END CONFIG ###
 
 def sweep():
@@ -12,9 +19,9 @@ def sweep():
     from outlook
     to onedrive
     """
-    # keep track of what folders exist
+    # keep track of what folders exist already in foia_response directory
     folders = []
-    foia_folder_url = base_url + 'drive/root:/' + onedrive_foia_responses_path
+    foia_folder_url = base_url + 'drive/root:/' + foia_response_folder_path
     foia_folder = json.loads(session.get(foia_folder_url).content)
     folder_items_url = base_url + 'drive/items/' + foia_folder['id'] + '/children'
     folder_items = json.loads(session.get(folder_items_url).content)['value']
@@ -76,6 +83,7 @@ def sweep():
                 try:
                     buffer_file.write(base64.b64decode(att['contentBytes']))
                 except Exception as e:
+                    print(e)
                     import ipdb; ipdb.set_trace()
                 buffer_file.close()
                 print('downloaded:',att['name'])
@@ -95,3 +103,4 @@ def sweep():
                 # clean up
                 print('removing:',buffer_file_path)
                 os.remove(buffer_file_path)            
+            # TODO: apply status/shipped to mail messages
