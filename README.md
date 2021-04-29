@@ -33,6 +33,9 @@ You'll configure these things in the config directory.
     - read/write files
 - clone this repo
 - pip install requirements
+    - `pip install -i https://test.pypi.org/simple/ msgraphcore`
+    - `pip install azure-identity`
+    - `pip install -r requirements.txt`
 - enter your user/apps secrets in the config directory
 - enter your project-specific configs there, too
 
