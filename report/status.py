@@ -5,7 +5,7 @@ from msg.msg import get_conversation, get_messages_by_category
 ### START CONFIG ###
 configs = json.loads(open('config/project_configs.json').read())
 status_report_path = configs['status_report_path']
-one_drive_project_folder_name = configs['one_drive_project_folder_name']
+project_folder_name = configs['project_folder_name']
 workbook_id = configs['workbook_id']
 worksheet_id = configs['worksheet_id']
 table_id = configs['table_id']
