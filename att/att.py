@@ -1,4 +1,4 @@
-import json, base64, os
+import json, base64, os, urllib
 from pathlib import Path
 import requests.exceptions
 from auth.auth import base_url, session
@@ -95,12 +95,52 @@ def sweep():
                 filePath = Path(buffer_file_path)
                 bytez = filePath.read_bytes()
                 try:
-                    session.put(file_folder_file_url,headers={'Content-Type':'application/pdf'},data=bytez)
+                    upload(buffer_file_path, folder_name, att['name'], bytez)
                     print('uploading',att['name'])
                 except requests.exceptions.HTTPError as err:
                     # TODO: haven't figured out large uploads yet so pass
                     print(err)
+                    import ipdb; ipdb.set_trace()
                 # clean up
                 print('removing:',buffer_file_path)
                 os.remove(buffer_file_path)            
             # TODO: apply status/shipped to mail messages
+
+
+def upload(file_path, folder_name, file_name, bytez):
+    # cribbed https://gist.github.com/keathmilligan/590a981cc629a8ea9b7c3bb64bfcb417
+    file_name = urllib.parse.quote(file_name)
+    result = session.post(
+            f'{base_url}drive/root:/{foia_response_folder_path}/{folder_name}/{file_name}:/createUploadSession', # TODO fix this call
+        json={
+            '@microsoft.graph.conflictBehavior': 'fail', # dupe filenames won't upload TODO: consider diffing
+            'description': file_name,
+            'fileSystemInfo': {'@odata.type': 'microsoft.graph.fileSystemInfo'},
+            'name': file_name
+        }
+    )
+    result.raise_for_status()
+    upload_session = result.json()
+    upload_url = upload_session['uploadUrl']
+
+    st = os.stat(file_path)
+    size = st.st_size
+    CHUNK_SIZE = 10485760
+    chunks = int(size / CHUNK_SIZE) + 1 if size % CHUNK_SIZE > 0 else 0
+    with open(file_path, 'rb') as fd:
+        start = 0
+        for chunk_num in range(chunks):
+            chunk = fd.read(CHUNK_SIZE)
+            bytes_read = len(chunk)
+            upload_range = f'bytes {start}-{start + bytes_read - 1}/{size}'
+            print(f'chunk: {chunk_num} bytes read: {bytes_read} upload range: {upload_range}')
+            result = session.put(
+                upload_url,
+                headers={
+                    'Content-Length': str(bytez),
+                    'Content-Range': upload_range
+                },
+                data=chunk
+            )
+            result.raise_for_status()
+            start += bytes_read
