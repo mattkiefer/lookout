@@ -4,7 +4,6 @@
   "local_download_dir": "/tmp/",
   "sample_msg_id": "an ID you can use to test that you are accessing your inbox",
   "status_report_path": "report/status_report.csv",
-  "one_drive_project_folder_name": "where you put all the files on sharepoint",
   "workbook_id": "for the status report",
   "worksheet_id": "for the status report",
   "table_id": "for the status report",
