@@ -38,10 +38,10 @@ def get_statuses(file_slug):
                 if 'replied' not in statuses:
                     statuses['replied'] = {}
                 statuses['replied'][convo_msg['id']] = convo_msg
-                #TODO fix bug where senders show up in replies
             # catch attachments
             # TODO: filter out bad att extensions
             if convo_msg['hasAttachments']:
+                import ipdb; ipdb.set_trace()
                 if 'attachment' not in statuses:
                     statuses['attachment'] = {}
                 statuses['attachment'][convo_msg['id']] = convo_msg
