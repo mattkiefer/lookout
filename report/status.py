@@ -34,7 +34,7 @@ def get_statuses(file_slug):
                 if 'flagged' not in statuses:
                     statuses['flagged'] = {}
                 statuses['flagged'][convo_msg['id']] = convo_msg
-            if sender_domain not in convo_msg['sender']['emailAddress']:
+            if sender_domain not in convo_msg['sender']['emailAddress']['address']:
                 if 'replied' not in statuses:
                     statuses['replied'] = {}
                 statuses['replied'][convo_msg['id']] = convo_msg
