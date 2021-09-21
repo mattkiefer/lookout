@@ -4,7 +4,7 @@ lookout = [foiamail](https://github.com/bettergov/foiamail) + [outlook](https://
 
 
 ## track + manage mass foia campaigns
-Lookout was designed for newsrooms that need to do large-scale public records requests using Outlook for mail and MS OneDrive for file management. It's very Alpha.
+Lookout was designed for newsrooms that need to do large-scale public records requests using Outlook for mail and MS OneDrive for file management. It's open-source software that's been deployed in production but it's still beta and needs more QA and documentation. Please feel free to try this out, fix any bugs you find and submit a pull request. Feature suggestions welcome.
 
 Lookout does three things:
 - distributes public records requests
